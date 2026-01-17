@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDG CollabHub - Impact Together</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --success: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --warning: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --dark: #2d3748;
+            --light: #f7fafc;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; 
+            color: #2d3748;
+        }
+        
+        /* Header */
+        .header { 
+            background: rgba(255,255,255,0.95); 
+            backdrop-filter: blur(20px); 
+            padding: 1.2rem 2rem; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100;
+        }
+        .logo { 
+            font-size: 1.8rem; 
+            font-weight: 800; 
+            background: var(--primary);
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
+        
+        .user-info { display: flex; align-items: center; gap: 1rem; }
+        .role-badge { 
+            background: var(--primary); 
+            color: white; 
+            padding: 0.4rem 1rem; 
+            border-radius: 25px; 
+            font-size: 0.8rem; 
+            font-weight: 600;
+        }
+        
+        /* Sidebar */
+        .sidebar { 
+            position: fixed; 
+            left: -300px; 
+            top: 80px; 
+            width: 300px; 
+            height: calc(100vh - 80px); 
+            background: rgba(255,255,255,0.98); 
+            backdrop-filter: blur(25px); 
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            box-shadow: 6px 0 40px rgba(0,0,0,0.15); 
+            z-index: 99;
+        }
+        .sidebar.active { left: 0; }
+        .sidebar ul { list-style: none; padding: 2.5rem 0; }
+        .sidebar li { 
+            padding: 1.2rem 2.5rem; 
+            cursor: pointer; 
+            transition: all 0.3s; 
+            border-left: 4px solid transparent; 
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .sidebar li:hover, .sidebar li.active { 
+            background: var(--primary); 
+            color: white; 
+            border-left-color: white;
+        }
+        .sidebar i { margin-right: 1.2rem; width: 22px; font-size: 1.1rem; }
+        .badge {
+            margin-left: auto;
+            background: #ff4757;
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        /* Main Content */
+        .main { 
+            margin-left: 0; 
+            padding: 2.5rem; 
+            transition: 0.4s; 
+            min-height: calc(100vh - 80px);
+        }
+        .sidebar.active ~ .main { margin-left: 300px; }
+        .toggle-btn { 
+            background: none; 
+            border: none; 
+            font-size: 1.6rem; 
+            cursor: pointer; 
+            color: #4a5568; 
+            padding: 0.8rem; 
+            border-radius: 50%; 
+            transition: all 0.3s;
+        }
+        
+        /* Sections */
+        .section { 
+            display: none; 
+            background: rgba(255,255,255,0.92); 
+            backdrop-filter: blur(20px); 
+            border-radius: 24px; 
+            padding: 2.5rem; 
+            margin-bottom: 2rem; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12); 
+            animation: slideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .section.active { display: block; }
+        @keyframes slideIn { 
+            from { opacity: 0; transform: translateY(40px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        /* Cards */
+        .metric-card, .project-card, .resource-card, .partnership-card { 
+            background: white; 
+            border-radius: 20px; 
+            padding: 2rem; 
+            box-shadow: 0 12px 40px rgba(0,0,0,0.08); 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255,255,255,0.5);
+            margin-bottom: 1.5rem;
+        }
+        .metric-card:hover, .project-card:hover, .resource-card:hover, .partnership-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+        }
+        
+        /* Buttons */
+        .btn { 
+            padding: 0.9rem 2rem; 
+            border: none; 
+            border-radius: 25px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 0.95rem; 
+            transition: all 0.3s; 
+            text-decoration: none; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 0.5rem;
+            margin: 0.25rem;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(79,172,254,0.4); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-secondary { background: rgba(79,172,254,0.1); color: #4facfe; border: 2px solid rgba(79,172,254,0.2); }
+        .btn-small { padding: 0.6rem 1.2rem; font-size: 0.85rem; }
+        .btn-icon-only { padding: 0.6rem; width: 40px; height: 40px; justify-content: center; }
+        
+        /* Forms */
+        .form-group { margin-bottom: 2rem; }
+        label { 
+            display: block; 
+            margin-bottom: 0.8rem; 
+            font-weight: 600; 
+            color: var(--dark);
+        }
+        input, textarea, select { 
+            width: 100%; 
+            padding: 1.1rem; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 16px; 
+            font-family: inherit; 
+            transition: all 0.3s;
+        }
+        input:focus, textarea:focus, select:focus { 
+            outline: none; 
+            border-color: #4facfe; 
+            box-shadow: 0 0 0 4px rgba(79,172,254,0.15);
+        }
+        
+        /* Dashboard Grid */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
+        .metric-number { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .metric-label { color: #718096; font-weight: 600; }
+        
+        /* Charts */
+        .chart-container { position: relative; height: 350px; }
+        .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem; margin: 2rem 0; }
+        
+        /* Status badges */
+        .status-badge { padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .status-active { background: rgba(67, 233, 123, 0.2); color: #43e97b; }
+        .status-pending { background: rgba(250, 112, 154, 0.2); color: #fa709a; }
+        .status-completed { background: rgba(79, 172, 254, 0.2); color: #4facfe; }
+        
+        /* SDG Colors */
+        .sdg-1 { background: #E65100; } .sdg-2 { background: #F57F17; } .sdg-3 { background: #00ACC1; }
+        .sdg-4 { background: #3949AB; } .sdg-5 { background: #E91E63; } .sdg-6 { background: #039BE5; }
+        .sdg-7 { background: #FF9800; } .sdg-8 { background: #558B2F; } .sdg-9 { background: #0097A7; }
+        .sdg-10 { background: #C2185B; } .sdg-11 { background: #7B1FA2; } .sdg-12 { background: #827717; }
+        .sdg-13 { background: #FBC02D; } .sdg-14 { background: #0288D1; } .sdg-15 { background: #388E3C; }
+        .sdg-16 { background: #1976D2; } .sdg-17 { background: #D81B60; }
+        
+        /* Loading */
+        .loading { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; margin-right: 0.5rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Chat styles */
+        .chat-container { display: flex; gap: 2rem; height: 500px; }
+        .chat-sidebar { flex: 0 0 250px; background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
+        .chat-main { flex: 1; background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
+        .chat-messages { height: 350px; overflow-y: auto; border: 2px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; background: #f8f9fc; margin-bottom: 1.5rem; }
+        .message { margin-bottom: 1rem; padding: 1rem; border-radius: 16px; max-width: 80%; }
+        .message.sent { background: var(--primary); color: white; margin-left: auto; }
+        .message.received { background: white; border: 1px solid #e2e8f0; }
+        .message-time { font-size: 0.8rem; opacity: 0.7; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main { padding: 1.5rem; }
+            .sidebar.active ~ .main { margin-left: 0; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .chat-container { flex-direction: column; height: auto; }
+        }
+        
+        .success-message {
+            background: rgba(67, 233, 123, 0.15);
+            border: 1px solid rgba(67, 233, 123, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: none;
+        }
+        .success-message.show { display: block; animation: slideIn 0.5s; }
+        
+        .progress-bar { height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; margin: 1rem 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #4facfe, #00f2fe); border-radius: 5px; transition: width 0.8s ease; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <button class="toggle-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <div class="logo">SDG CollabHub</div>
+        </div>
+        <div class="user-info">
+            <span style="font-weight: 600;">The rage</span>
+            <span class="role-badge">Organization</span>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <ul>
+            <li onclick="showSection('dashboard')" class="active"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></li>
+            <li onclick="showSection('projects')"><i class="fas fa-project-diagram"></i><span>Projects</span><span class="badge" id="projectBadge">3</span></li>
+            <li onclick="showSection('resources')"><i class="fas fa-boxes"></i><span>Resources</span><span class="badge" id="resourceBadge">2</span></li>
+            <li onclick="showSection('partnerships')"><i class="fas fa-handshake"></i><span>Partnerships</span><span class="badge" id="partnershipBadge">4</span></li>
+            <li onclick="showSection('tracking')"><i class="fas fa-chart-line"></i><span>Tracking</span></li>
+            <li onclick="showSection('messages')"><i class="fas fa-comments"></i><span>Messages</span><span class="badge" id="messageBadge">2</span></li>
+            <li class="admin-only" onclick="showSection('admin')"><i class="fas fa-user-shield"></i><span>Admin Panel</span></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Dashboard (UNCHANGED) -->
+        <section id="dashboard" class="section active">
+            <h1 style="font-size: 2.5rem; margin-bottom: 1rem; background: var(--primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Dashboard Overview
+            </h1>
+            <p style="color: #718096; margin-bottom: 2rem;">Real-time impact tracking for your SDG projects</p>
+            <!-- INFO SECTION ABOUT SDGs -->
+<div class="info-section" style="background: rgba(255,255,255,0.9); padding: 2rem; border-radius: 20px; margin-bottom: 2rem; box-shadow: 0 10px 40px rgba(0,0,0,0.08);">
+    <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 1rem; color: var(--dark);">About SDG CollabHub & SDGs</h2>
+    <p style="color: #4a5568; margin-bottom: 1rem;">
+        Sustainable Development Goals (SDGs) are 17 global goals set by the UN to achieve a better and more sustainable future for all. 
+        This platform connects startups, NGOs, governments, and researchers to collaborate on SDG-aligned projects, share resources, track progress, and measure impact.
+    </p>
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+        <span class="sdg-1" style="padding:0.5rem 1rem; border-radius:12px; color:white;">No Poverty</span>
+        <span class="sdg-2" style="padding:0.5rem 1rem; border-radius:12px; color:white;">Zero Hunger</span>
+        <span class="sdg-3" style="padding:0.5rem 1rem; border-radius:12px; color:white;">Good Health</span>
+        <span class="sdg-4" style="padding:0.5rem 1rem; border-radius:12px; color:white;">Quality Education</span>
+        <span class="sdg-5" style="padding:0.5rem 1rem; border-radius:12px; color:white;">Gender Equality</span>
+        <span class="sdg-6" style="padding:0.5rem 1rem; border-radius:12px; color:white;">Clean Water</span>
+        <span class="sdg-7" style="padding:0.5rem 1rem; border-radius:12px; color:white;">Affordable Energy</span>
+        <span class="sdg-8" style="padding:0.5rem 1rem; border-radius:12px; color:white;">Decent Work</span>
+        <span class="sdg-9" style="padding:0.5rem 1rem; border-radius:12px; color:white;">Industry & Innovation</span>
+        <span class="sdg-10" style="padding:0.5rem 1rem; border-radius:12px; color:white;">Reduced Inequality</span>
+        <span class="sdg-11" style="padding:0.5rem 1rem; border-radius:12px; color:white;">Sustainable Cities</span>
+        <span class="sdg-12" style="padding:0.5rem 1rem; border-radius:12px; color:white;">Responsible Consumption</span>
+        <span class="sdg-13" style="padding:0.5rem 1rem; border-radius:12px; color:white;">Climate Action</span>
+        <span class="sdg-14" style="padding:0.5rem 1rem; border-radius:12px; color:white;">Life Below Water</span>
+        <span class="sdg-15" style="padding:0.5rem 1rem; border-radius:12px; color:white;">Life on Land</span>
+        <span class="sdg-16" style="padding:0.5rem 1rem; border-radius:12px; color:white;">Peace & Justice</span>
+        <span class="sdg-17" style="padding:0.5rem 1rem; border-radius:12px; color:white;">Partnerships</span>
+    </div>
+</div>
+
+            <div class="dashboard-grid" id="dashboardMetrics">
+                <div class="metric-card">
+                    <div style="font-size: 3rem; color: #4facfe; margin-bottom: 1rem;"><i class="fas fa-project-diagram"></i></div>
+                    <div class="metric-number" id="totalProjects" style="color: #4facfe;">3</div>
+                    <div class="metric-label">Active Projects</div>
+                </div>
+                <div class="metric-card">
+                    <div style="font-size: 3rem; color: #43e97b; margin-bottom: 1rem;"><i class="fas fa-handshake"></i></div>
+                    <div class="metric-number" style="color: #43e97b;">5</div>
+                    <div class="metric-label">Partnerships</div>
+                </div>
+                <div class="metric-card">
+                    <div style="font-size: 3rem; color: #00f2fe; margin-bottom: 1rem;"><i class="fas fa-chart-line"></i></div>
+                    <div class="metric-number" style="color: #00f2fe;">78%</div>
+                    <div class="metric-label">Avg Progress</div>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 20px 60px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 1.5rem;">Project Progress</h3>
+                    <div class="chart-container">
+                        <canvas id="projectChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="success-message" id="dashboardSuccess">
+                <i class="fas fa-check-circle" style="color: #43e97b; font-size: 1.5rem; margin-right: 1rem;"></i>
+                <strong>New project added successfully!</strong> Dashboard updated with latest data.
+            </div>
+        </section>
+
+        <!-- Projects (UNCHANGED) -->
+        <section id="projects" class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+                <div>
+                    <h2 style="font-size: 2.2rem; font-weight: 700; color: var(--dark); margin-bottom: 0.5rem;">
+                        <i class="fas fa-project-diagram"></i> Your Projects
+                    </h2>
+                    <p style="color: #718096;">Manage your SDG initiatives and track progress</p>
+                </div>
+                <button class="btn btn-primary" onclick="toggleProjectForm()">
+                    <i class="fas fa-plus"></i> Add New Project
+                </button>
+            </div>
+
+            <div id="projectFormContainer" style="display: none; background: white; border-radius: 20px; padding: 2.5rem; margin-bottom: 2.5rem; box-shadow: 0 20px 60px rgba(0,0,0,0.1);">
+                <form id="projectForm">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                        <div class="form-group">
+                            <label>Project Title *</label>
+                            <input type="text" id="projectTitle" placeholder="e.g., Clean Water Initiative" required>
+                        </div>
+                        <div class="form-group">
+                            <label>SDG Goal *</label>
+                            <select id="sdgGoal" required>
+                                <option value="">Select SDG Goal</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea rows="4" id="projectDesc" placeholder="Describe your project goals and expected impact..."></textarea>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem;">
+                        <div class="form-group">
+                            <label>Funding Goal</label>
+                            <input type="number" id="fundingGoal" placeholder="₹0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Initial Progress (%)</label>
+                            <input type="number" id="initialProgress" placeholder="0" min="0" max="100" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Partners Needed</label>
+                            <input type="number" id="partnersNeeded" placeholder="0" min="0">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" onclick="toggleProjectForm()">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <span id="submitText">Create Project</span>
+                            <span class="loading" id="submitLoading" style="display: none;"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="projectsList"></div>
+        </section>
+
+        <!-- RESOURCES SECTION - NEW -->
+        <section id="resources" class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+                <div>
+                    <h2 style="font-size: 2.2rem; font-weight: 700; color: var(--dark); margin-bottom: 0.5rem;">
+                        <i class="fas fa-boxes"></i> Resources & Expertise
+                    </h2>
+                    <p style="color: #718096;">Offer or request resources for SDG projects</p>
+                </div>
+                <button class="btn btn-primary" onclick="toggleResourceForm()">
+                    <i class="fas fa-plus"></i> Add Resource
+                </button>
+            </div>
+
+            <div id="resourceFormContainer" style="display: none; background: white; border-radius: 20px; padding: 2.5rem; margin-bottom: 2.5rem; box-shadow: 0 20px 60px rgba(0,0,0,0.1);">
+                <form id="resourceForm">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                        <div class="form-group">
+                            <label>Resource Name *</label>
+                            <input type="text" id="resourceName" placeholder="e.g., Solar Panel Installation Team" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Resource Type *</label>
+                            <select id="resourceType" required>
+                                <option value="">Select type</option>
+                                <option value="expertise">Expertise</option>
+                                <option value="funding">Funding</option>
+                                <option value="equipment">Equipment</option>
+                                <option value="volunteers">Volunteers</option>
+                                <option value="space">Space/Venue</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea rows="3" id="resourceDesc" placeholder="Details about what you offer..."></textarea>
+                    </div>
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" onclick="toggleResourceForm()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <span>Offer Resource</span>
+                            <span class="loading" style="display: none;"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="resourcesList" class="grid-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem;"></div>
+        </section>
+
+        <!-- PARTNERSHIPS SECTION - NEW -->
+        <section id="partnerships" class="section">
+            <h2 style="font-size: 2.2rem; font-weight: 700; color: var(--dark); margin-bottom: 2.5rem;">
+                <i class="fas fa-handshake"></i> Partnerships & Collaborations
+            </h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+                <div style="background: white; border-radius: 20px; padding: 2.5rem; box-shadow: 0 20px 60px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--dark);">Incoming Requests</h3>
+                    <div id="incomingPartnerships"></div>
+                </div>
+                <div style="background: white; border-radius: 20px; padding: 2.5rem; box-shadow: 0 20px 60px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--dark);">Your Requests</h3>
+                    <div id="outgoingPartnerships"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRACKING SECTION - NEW -->
+        <section id="tracking" class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+                <div>
+                    <h2 style="font-size: 2.2rem; font-weight: 700; color: var(--dark); margin-bottom: 0.5rem;">
+                        <i class="fas fa-chart-line"></i> SDG Impact Tracking
+                    </h2>
+                    <p style="color: #718096;">Monitor milestones and measure real impact</p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <select id="sdgFilter" style="padding: 0.8rem 1.5rem; border: 2px solid #e2e8f0; border-radius: 16px;">
+                        <option>All SDGs</option>
+                    </select>
+                    <button class="btn btn-primary">Export Report</button>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div style="background: white; border-radius: 20px; padding: 2.5rem; box-shadow: 0 20px 60px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 1.5rem;">Milestone Completion</h3>
+                    <div class="chart-container">
+                        <canvas id="milestoneChart"></canvas>
+                    </div>
+                </div>
+                <div style="background: white; border-radius: 20px; padding: 2.5rem; box-shadow: 0 20px 60px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 1.5rem;">Impact Indicators</h3>
+                    <div class="chart-container">
+                        <canvas id="impactChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div id="milestonesList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; margin-top: 2rem;"></div>
+        </section>
+
+        <!-- MESSAGES SECTION - NEW -->
+        <section id="messages" class="section">
+            <h2 style="font-size: 2.2rem; font-weight: 700; color: var(--dark); margin-bottom: 2.5rem;">
+                <i class="fas fa-comments"></i> Collaboration Messages
+            </h2>
+            
+            <div class="chat-container">
+                <div class="chat-sidebar">
+                    <div style="margin-bottom: 2rem;">
+                        <input type="text" placeholder="Search conversations..." style="width: 100%; padding: 1rem; border: 2px solid #e2e8f0; border-radius: 16px; margin-bottom: 1rem;">
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="btn btn-primary" style="flex: 1;" onclick="newConversation()">New Message</button>
+                            <button class="btn btn-secondary" style="flex: 1;">Groups</button>
+                        </div>
+                    </div>
+                    <div id="chatList" style="max-height: 300px; overflow-y: auto;"></div>
+                </div>
+                <div class="chat-main">
+                    <div style="display: flex; align-items: center; gap: 1rem; padding-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; margin-bottom: 1.5rem;">
+                        <div style="width: 50px; height: 50px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">NGO</div>
+                        <div>
+                            <h3 style="font-size: 1.2rem; margin-bottom: 0.25rem;">NGO EarthCare</h3>
+                            <div style="font-size: 0.85rem; color: #718096;">Online 2 mins ago</div>
+                        </div>
+                    </div>
+                    <div id="chatMessages" class="chat-messages"></div>
+                    <div style="display: flex; gap: 1rem; padding-top: 1.5rem; border-top: 2px solid #e2e8f0;">
+                        <div style="flex: 1; position: relative;">
+                            <input type="text" id="messageInput" placeholder="Type a message..." style="width: 100%; padding: 1rem 4rem 1rem 1rem; border: 2px solid #e2e8f0; border-radius: 25px;">
+                            <button class="btn-icon-only btn-primary" style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%);">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                        </div>
+                        <button onclick="sendMessage()" class="btn btn-primary">Send</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- ADMIN SECTION -->
+<section id="admin" class="section">
+    <h2 style="font-size: 2.2rem; font-weight: 700; color: var(--dark); margin-bottom: 2rem;">
+        <i class="fas fa-user-shield"></i> Admin Dashboard
+    </h2>
+
+    <!-- Admin Metrics -->
+    <div class="dashboard-grid">
+        <div class="metric-card">
+            <div style="font-size: 3rem; color: #4facfe; margin-bottom: 0.5rem;"><i class="fas fa-users"></i></div>
+            <div class="metric-number" id="totalOrgs">4</div>
+            <div class="metric-label">Total Organizations</div>
+        </div>
+        <div class="metric-card">
+            <div style="font-size: 3rem; color: #43e97b; margin-bottom: 0.5rem;"><i class="fas fa-project-diagram"></i></div>
+            <div class="metric-number" id="totalProjectsAdmin">10</div>
+            <div class="metric-label">Projects Submitted</div>
+        </div>
+        <div class="metric-card">
+            <div style="font-size: 3rem; color: #fa709a; margin-bottom: 0.5rem;"><i class="fas fa-handshake"></i></div>
+            <div class="metric-number" id="totalPartnershipsAdmin">7</div>
+            <div class="metric-label">Total Partnerships</div>
+        </div>
+    </div>
+
+    <!-- Organizations Table -->
+    <h3 style="margin-bottom: 1rem;">Organizations</h3>
+    <table style="width:100%; border-collapse: collapse; margin-bottom: 2rem;">
+        <thead>
+            <tr style="background: var(--primary); color:white;">
+                <th style="padding: 0.8rem;">Org Name</th>
+                <th>Type</th>
+                <th>Email</th>
+                <th>Projects</th>
+            </tr>
+        </thead>
+        <tbody id="orgTable"></tbody>
+    </table>
+
+    <!-- Pending Projects -->
+    <h3 style="margin-bottom: 1rem;">Pending Projects</h3>
+    <div id="adminProjects" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;"></div>
+
+    <!-- Resource Requests -->
+    <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Resource Requests</h3>
+    <div id="adminResources" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;"></div>
+</section>
+    </main>
+
+    <script>
+        function switchRole() {
+    const role = document.getElementById('role').value;
+    document.querySelectorAll('.admin-only').forEach(b => {
+        b.style.display = role === 'admin' ? 'block' : 'none';
+    });
+}
+
+        // Global app data
+        let projectsData = [
+            {
+                id: 1, title: 'Clean Water for Rural Maharashtra', sdg: 6, desc: 'Installing water purification systems in 25 villages across Pune district.', fundingGoal: 75000, fundingRaised: 52300, progress: 68, partnersNeeded: 3, partners: 2, dateAdded: 'Jan 15, 2026'
+            },
+            {
+                id: 2, title: 'Digital Education Platform', sdg: 4, desc: 'Online learning platform for underprivileged students in Pimpri.', fundingGoal: 120000, fundingRaised: 89000, progress: 42, partnersNeeded: 2, partners: 1, dateAdded: 'Jan 14, 2026'
+            },
+            {
+                id: 3, title: 'Sustainable Farming Initiative', sdg: 2, desc: 'Organic farming training for local farmers in Maharashtra.', fundingGoal: 45000, fundingRaised: 32000, progress: 85, partnersNeeded: 4, partners: 3, dateAdded: 'Jan 12, 2026'
+            }
+        ];
+
+        let resourcesData = [
+            { id: 1, name: 'Solar Panel Installation Team', type: 'expertise', desc: 'Certified team with 5+ years experience in rooftop solar installations', org: 'GreenTech Solutions', status: 'available' },
+            { id: 2, name: '₹2 Lakh Funding Pool', type: 'funding', desc: 'Available for SDG 7 & 13 projects in Maharashtra', org: 'Govt Innovation Grant', status: 'available' }
+        ];
+
+        let partnershipsData = {
+            incoming: [
+                { id: 1, from: 'NGO EarthCare', project: 'Clean Water...', status: 'pending', date: '2 hours ago' },
+                { id: 2, from: 'Govt Maharashtra', project: 'Digital Education...', status: 'pending', date: '1 day ago' }
+            ],
+            outgoing: [
+                { id: 3, to: 'Research AI Lab', project: 'Farming Initiative', status: 'accepted', date: '3 days ago' },
+                { id: 4, to: 'Startup GreenEnergy', project: 'Clean Water...', status: 'rejected', date: '5 days ago' }
+            ]
+        };
+
+        let messagesData = {
+            chats: ['NGO EarthCare', 'Govt Maharashtra', 'Research AI Lab'],
+            currentChat: 'NGO EarthCare',
+            messages: [
+                { from: 'NGO EarthCare', text: 'Hi! We can provide 20 volunteers for your water project next week.', time: '10:30 AM', type: 'received' },
+                { from: 'You', text: 'Perfect! Can they start from Jan 20th?', time: '10:32 AM', type: 'sent' },
+                { from: 'NGO EarthCare', text: 'Yes, we can arrange that. Will send formal MoU.', time: '10:35 AM', type: 'received' }
+            ]
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            populateSDGSelect();
+            renderProjects();
+            renderDashboard();
+            renderResources();
+            renderPartnerships();
+            renderMessages();
+            renderTracking();
+            initCharts();
+            setupEventListeners();
+            updateBadges();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('projectForm').addEventListener('submit', handleProjectSubmit);
+            document.getElementById('resourceForm').addEventListener('submit', handleResourceSubmit);
+        }
+
+        // Existing project functions (unchanged)
+        function toggleProjectForm() {
+            const form = document.getElementById('projectFormContainer');
+            form.style.display = form.style.display === 'block' ? 'none' : 'block';
+            if (form.style.display === 'block') document.getElementById('projectTitle').focus();
+        }
+
+        async function handleProjectSubmit(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            const loading = document.getElementById('submitLoading');
+            
+            submitText.style.display = 'none';
+            loading.style.display = 'inline-block';
+            submitBtn.disabled = true;
+
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            const newProject = {
+                id: Date.now(),
+                title: document.getElementById('projectTitle').value,
+                sdg: parseInt(document.getElementById('sdgGoal').value),
+                desc: document.getElementById('projectDesc').value || 'No description provided.',
+                fundingGoal: parseInt(document.getElementById('fundingGoal').value) || 0,
+                fundingRaised: 0,
+                progress: parseInt(document.getElementById('initialProgress').value) || 0,
+                partnersNeeded: parseInt(document.getElementById('partnersNeeded').value) || 0,
+                partners: 0,
+                dateAdded: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            };
+
+            projectsData.unshift(newProject);
+            document.getElementById('projectForm').reset();
+            toggleProjectForm();
+            renderProjects();
+            renderDashboard();
+            updateCharts();
+            updateBadges();
+            showDashboardSuccess();
+            
+            submitText.style.display = 'inline';
+            loading.style.display = 'none';
+            submitBtn.disabled = false;
+        }
+
+        // NEW: Resources functions
+        function toggleResourceForm() {
+            const form = document.getElementById('resourceFormContainer');
+            form.style.display = form.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function handleResourceSubmit(e) {
+            e.preventDefault();
+            resourcesData.unshift({
+                id: Date.now(),
+                name: document.getElementById('resourceName').value,
+                type: document.getElementById('resourceType').value,
+                desc: document.getElementById('resourceDesc').value,
+                org: 'The rage',
+                status: 'available'
+            });
+            document.getElementById('resourceForm').reset();
+            toggleResourceForm();
+            renderResources();
+            updateBadges();
+            alert('✅ Resource offered successfully!');
+        }
+
+        function renderResources() {
+            document.getElementById('resourcesList').innerHTML = resourcesData.map(resource => `
+                <div class="resource-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                        <span class="status-badge status-${resource.status}">${resource.status.toUpperCase()}</span>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-small btn-success">Match Project</button>
+                            <button class="btn btn-small btn-primary">Share</button>
+                        </div>
+                    </div>
+                    <h3 style="font-size: 1.4rem; margin-bottom: 0.8rem;">${resource.name}</h3>
+                    <p style="color: #718096; margin-bottom: 1rem;">${resource.desc}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 600; color: var(--dark);">${resource.org}</span>
+                        <span style="font-size: 0.9rem; color: #718096;">${resource.type}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // NEW: Partnerships functions
+        function renderPartnerships() {
+            document.getElementById('incomingPartnerships').innerHTML = partnershipsData.incoming.map(p => `
+                <div class="partnership-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <span class="status-badge status-${p.status}">${p.status.toUpperCase()}</span>
+                    </div>
+                    <h3 style="margin-bottom: 0.5rem;">${p.from}</h3>
+                    <p style="color: #718096; margin-bottom: 1rem;">Project: ${p.project}</p>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-success btn-small" onclick="acceptPartnership(${p.id})">Accept</button>
+                        <button class="btn btn-warning btn-small" onclick="rejectPartnership(${p.id})">Reject</button>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('outgoingPartnerships').innerHTML = partnershipsData.outgoing.map(p => `
+                <div class="partnership-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <span class="status-badge status-${p.status}">${p.status.toUpperCase()}</span>
+                    </div>
+                    <h3 style="margin-bottom: 0.5rem;">Sent to: ${p.to}</h3>
+                    <p style="color: #718096;">Project: ${p.project} • ${p.date}</p>
+                </div>
+            `).join('');
+        }
+
+        function acceptPartnership(id) {
+            alert('✅ Partnership accepted! Collaboration started.');
+        }
+
+        function rejectPartnership(id) {
+            alert('❌ Partnership declined.');
+        }
+
+        // NEW: Tracking functions
+        function renderTracking() {
+            const milestones = [
+                { id: 1, title: 'Water systems installed', sdg: 6, progress: 75, status: 'on-track', dueDate: 'Jan 25' },
+                { id: 2, title: 'Training sessions completed', sdg: 4, progress: 60, status: 'behind', dueDate: 'Jan 22' }
+            ];
+            
+            document.getElementById('milestonesList').innerHTML = milestones.map(m => `
+                <div class="project-card">
+                    <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+                        <span class="sdg-badge sdg-${m.sdg}">SDG ${m.sdg}</span>
+                        <span class="status-badge status-${m.status}">${m.status.toUpperCase()}</span>
+                    </div>
+                    <h3>${m.title}</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${m.progress}%"></div>
+                    </div>
+                    <p style="color: #718096; margin-top: 1rem;">Due: ${m.dueDate}</p>
+                </div>
+            `).join('');
+        }
+
+        // NEW: Messages functions
+        function renderMessages() {
+            document.getElementById('chatList').innerHTML = messagesData.chats.map(chat => `
+                <div style="padding: 1rem; border-radius: 12px; margin-bottom: 0.5rem; cursor: pointer; transition: background 0.2s;" onclick="switchChat('${chat}')">
+                    <div style="font-weight: 600; margin-bottom: 0.25rem;">${chat}</div>
+                    <div style="font-size: 0.85rem; color: #718096;">Latest message preview...</div>
+                </div>
+            `).join('');
+
+            document.getElementById('chatMessages').innerHTML = messagesData.messages.map(msg => `
+                <div class="message ${msg.type}">
+                    <div>${msg.text}</div>
+                    <div class="message-time">${msg.time}</div>
+                </div>
+            `).join('');
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            if (input.value.trim()) {
+                messagesData.messages.push({
+                    from: 'You',
+                    text: input.value,
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                    type: 'sent'
+                });
+                input.value = '';
+                renderMessages();
+                document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+            }
+        }
+
+        function newConversation() {
+            alert('📝 Start new conversation with partner');
+        }
+
+        function switchChat(chatName) {
+            messagesData.currentChat = chatName;
+            renderMessages();
+        }
+
+        // Utility functions
+        function renderProjects() {
+            const container = document.getElementById('projectsList');
+            container.innerHTML = projectsData.map(project => `
+                <div class="project-card" data-project-id="${project.id}">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                        <span class="sdg-badge sdg-${project.sdg}" style="padding: 0.4rem 1rem; font-weight: 600;">SDG ${project.sdg}</span>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-small btn-success">Update</button>
+                            <button class="btn btn-small btn-primary">Share</button>
+                        </div>
+                    </div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--dark);">${project.title}</h3>
+                    <p style="color: #718096; line-height: 1.6; margin-bottom: 1.5rem;">${project.desc}</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; font-size: 0.95rem;">
+                        <div><strong>Progress:</strong> ${project.progress}%</div>
+                        <div><strong>Funding:</strong> ₹${project.fundingRaised.toLocaleString()}/${project.fundingGoal.toLocaleString()}</div>
+                        <div><strong>Partners:</strong> ${project.partners}/${project.partnersNeeded}</div>
+                        <div><strong>Added:</strong> ${project.dateAdded}</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${project.progress}%"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderDashboard() {
+            document.getElementById('totalProjects').textContent = projectsData.length;
+            const avgProgress = Math.round(projectsData.reduce((sum, p) => sum + p.progress, 0) / projectsData.length);
+            document.querySelector('.metric-card:nth-child(3) .metric-number').textContent = avgProgress + '%';
+        }
+
+        function updateBadges() {
+            document.getElementById('projectBadge').textContent = projectsData.length;
+            document.getElementById('resourceBadge').textContent = resourcesData.length;
+            document.getElementById('partnershipBadge').textContent = partnershipsData.incoming.length + partnershipsData.outgoing.length;
+            document.getElementById('messageBadge').textContent = messagesData.messages.filter(m => m.type === 'received').length;
+        }
+
+        function populateSDGSelect() {
+            const select = document.getElementById('sdgGoal');
+            const sdgs = ['No Poverty', 'Zero Hunger', 'Good Health & Wellbeing', 'Quality Education', 'Gender Equality', 'Clean Water & Sanitation', 'Affordable & Clean Energy', 'Decent Work & Economic Growth', 'Industry Innovation & Infrastructure', 'Reduced Inequalities', 'Sustainable Cities & Communities', 'Responsible Consumption & Production', 'Climate Action', 'Life Below Water', 'Life on Land', 'Peace, Justice & Strong Institutions', 'Partnerships for the Goals'];
+            for(let i = 1; i <= 17; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${i} - ${sdgs[i-1]}`;
+                select.appendChild(option);
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.sidebar li').forEach(li => li.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            document.querySelector(`[onclick="showSection('${sectionId}')"]`).closest('li').classList.add('active');
+            toggleSidebar();
+        }
+
+        function initCharts() {
+            // Dashboard chart
+            const projectCtx = document.getElementById('projectChart')?.getContext('2d');
+            if (projectCtx) {
+                new Chart(projectCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: projectsData.map(p => `SDG ${p.sdg}`),
+                        datasets: [{
+                            data: projectsData.map(p => p.progress),
+                            backgroundColor: projectsData.map(p => {
+                                const colors = ['#E65100','#F57F17','#00ACC1','#3949AB','#039BE5','#FF9800','#558B2F','#0097A7','#C2185B','#7B1FA2','#827717','#FBC02D','#0288D1','#388E3C','#1976D2','#D81B60'];
+                                return colors[p.sdg - 1] || '#4facfe';
+                            }),
+                            borderWidth: 0
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            // Tracking charts
+            const milestoneCtx = document.getElementById('milestoneChart')?.getContext('2d');
+            if (milestoneCtx) {
+                new Chart(milestoneCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Milestone 1', 'Milestone 2', 'Milestone 3', 'Milestone 4'],
+                        datasets: [{
+                            label: 'Completion %',
+                            data: [75, 60, 90, 45],
+                            backgroundColor: '#4facfe'
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } } }
+                });
+            }
+
+            const impactCtx = document.getElementById('impactChart')?.getContext('2d');
+            if (impactCtx) {
+                new Chart(impactCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan 10', 'Jan 12', 'Jan 14', 'Jan 16', 'Jan 17'],
+                        datasets: [{
+                            label: 'People Impacted',
+                            data: [150, 320, 450, 680, 1250],
+                            borderColor: '#43e97b',
+                            backgroundColor: 'rgba(67, 233, 123, 0.1)',
+                            fill: true
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+        }
+
+        function showDashboardSuccess() {
+            const successMsg = document.getElementById('dashboardSuccess');
+            successMsg.classList.add('show');
+            setTimeout(() => successMsg.classList.remove('show'), 4000);
+        }
+
+        // Enter to send message
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && document.activeElement.id === 'messageInput') {
+                sendMessage();
+            }
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+    switchRole(); // hide admin-only links by default
+});
+
+    </script>
+</body>
+</html>
