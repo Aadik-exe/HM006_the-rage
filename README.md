@@ -45,3 +45,11 @@ Mobile-Friendly Version: Make the platform responsive so it works well on phones
 Blockchain for Transparency: We can explore using smart contracts to verify project milestones and SDG progress in a safe, tamper-proof way.
 Cloud Deployment & Scaling: Our site is on Vercel, but in the future we can scale it using AWS or Netlify for more users.
 Future Integrations: We can connect with government or NGO APIs to automatically share project data and track SDG progress.
+
+our team:
+Aadi kulkarni
+Satyajeet Mane
+Riya Borana
+Abhyudya Waghmare
+
+Thank You for Using SDG COLLABHUB!
