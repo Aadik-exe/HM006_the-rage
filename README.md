@@ -50,6 +50,6 @@ our team:
 Aadi kulkarni
 Satyajeet Mane
 Riya Borana
-Abhyudya Waghmare
+
 
 Thank You for Using SDG COLLABHUB!
